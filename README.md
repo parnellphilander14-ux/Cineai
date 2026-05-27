@@ -3,7 +3,6 @@
 Final Project Coding — Streamlit + API Integration
 
 ## Features
-- 🔍 Search movies by title (TMDB API)
 - 🎭 Browse movies by genre & sorting
 - 🎬 Movie posters, ratings, cast & details
 - 🤖 AI Movie Chatbot (Google Gemini)
@@ -16,8 +15,7 @@ Final Project Coding — Streamlit + API Integration
 pip install -r requirements.txt
 ```
 
-### 2. Get API Keys (both free)
-- **TMDB**: https://www.themoviedb.org/settings/api
+### 2. Get API Key
 - **Gemini**: https://aistudio.google.com/apikey
 
 ### 3. Run the app
