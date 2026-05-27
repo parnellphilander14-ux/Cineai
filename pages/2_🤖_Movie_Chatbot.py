@@ -15,6 +15,7 @@ html, body, .stApp { background-color:var(--dark) !important; color:var(--white)
 [data-testid="stSidebarNav"] a { color:var(--muted) !important; }
 [data-testid="stSidebarNav"] a:hover { color:var(--white) !important; background-color:rgba(230,57,70,0.15) !important; }
 hr { border-color:var(--border) !important; }
+[data-testid="collapsedControl"] { display:block !important; color:white !important; }
 [data-testid="stChatMessage"] { background-color:var(--card) !important; border:1px solid var(--border) !important; border-radius:10px !important; margin-bottom:0.5rem !important; }
 [data-testid="stChatMessage"] p { color:var(--white) !important; font-family:'DM Sans',sans-serif !important; }
 [data-testid="stChatInput"] { background-color:var(--card) !important; border:1px solid var(--border) !important; border-radius:8px !important; }
