@@ -62,7 +62,7 @@ Format:
 ]"""
 
     response = client.models.generate_content(
-        model="gemini-1.5-flash",
+        model="gemini-2.0-flash-lite",
         config=types.GenerateContentConfig(temperature=0.7, max_output_tokens=2048),
         contents=prompt
     )
