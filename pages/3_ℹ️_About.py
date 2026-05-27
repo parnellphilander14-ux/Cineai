@@ -38,9 +38,9 @@ with col1:
     <div style='background:#161616;border:1px solid #2a2a2a;border-radius:12px;padding:2rem;margin-bottom:1.5rem;'>
         <h3 style='font-family:\"Bebas Neue\",sans-serif;font-size:1.4rem;color:#F5F0EB;letter-spacing:0.06em;margin-top:0;'>ABOUT THIS APP</h3>
         <p style='color:#aaa;line-height:1.7;'>
-            CineAI is a movie discovery platform built with Streamlit that combines real-time movie data 
-            with AI-powered conversation. Whether you're looking for your next favorite film or want to 
-            explore cinema history, CineAI has you covered.
+            CineAI is an AI-powered movie discovery platform built with Streamlit.
+            It uses Google Gemini to recommend movies based on your mood, genre, or any description —
+            and lets you chat with an AI movie expert for anything cinema-related.
         </p>
     </div>
 
@@ -48,13 +48,17 @@ with col1:
         <h3 style='font-family:\"Bebas Neue\",sans-serif;font-size:1.4rem;color:#F5F0EB;letter-spacing:0.06em;margin-top:0;'>HOW TO USE</h3>
         <div style='color:#aaa;line-height:1.8;'>
             <p style='margin:0.4rem 0;'>
-                <span style='color:#E63946;font-weight:600;'>Step 1</span> — Get a free 
-                <a href='https://www.themoviedb.org/settings/api' style='color:#E63946;'>TMDB API Key</a> 
-                and a free <a href='https://aistudio.google.com/apikey' style='color:#E63946;'>Gemini API Key</a>
+                <span style='color:#E63946;font-weight:600;'>Step 1</span> — Open the <b style='color:#F5F0EB;'>🎬 Movie Recommender</b> page
             </p>
-            <p style='margin:0.4rem 0;'><span style='color:#E63946;font-weight:600;'>Step 2</span> — Enter your keys in the sidebar on each page</p>
-            <p style='margin:0.4rem 0;'><span style='color:#E63946;font-weight:600;'>Step 3</span> — Use 🎬 Movie Recommender to search/browse films</p>
-            <p style='margin:0.4rem 0;'><span style='color:#E63946;font-weight:600;'>Step 4</span> — Use 🤖 Movie Chatbot to ask anything about cinema</p>
+            <p style='margin:0.4rem 0;'>
+                <span style='color:#E63946;font-weight:600;'>Step 2</span> — Search by mood or title, or browse by genre and mood combo
+            </p>
+            <p style='margin:0.4rem 0;'>
+                <span style='color:#E63946;font-weight:600;'>Step 3</span> — Open the <b style='color:#F5F0EB;'>🤖 Movie Chatbot</b> page
+            </p>
+            <p style='margin:0.4rem 0;'>
+                <span style='color:#E63946;font-weight:600;'>Step 4</span> — Ask anything about movies, directors, actors, or get more recommendations
+            </p>
         </div>
     </div>
     """, unsafe_allow_html=True)
@@ -66,27 +70,26 @@ with col2:
         <div style='color:#aaa;'>
             <p style='margin:0.6rem 0;'>🐍 <b style='color:#F5F0EB;'>Python</b></p>
             <p style='margin:0.6rem 0;'>🎈 <b style='color:#F5F0EB;'>Streamlit</b> — UI Framework</p>
-            <p style='margin:0.6rem 0;'>🎬 <b style='color:#F5F0EB;'>TMDB API</b> — Movie Data</p>
-            <p style='margin:0.6rem 0;'>🤖 <b style='color:#F5F0EB;'>Gemini API</b> — AI Chatbot</p>
-            <p style='margin:0.6rem 0;'>🌐 <b style='color:#F5F0EB;'>Requests</b> — HTTP Client</p>
+            <p style='margin:0.6rem 0;'>🤖 <b style='color:#F5F0EB;'>Gemini API</b> — AI Recommender & Chatbot</p>
+            <p style='margin:0.6rem 0;'>☁️ <b style='color:#F5F0EB;'>Streamlit Cloud</b> — Deployment</p>
         </div>
     </div>
 
     <div style='background:#161616;border:1px solid #2a2a2a;border-radius:12px;padding:2rem;'>
         <h3 style='font-family:\"Bebas Neue\",sans-serif;font-size:1.4rem;color:#F5F0EB;letter-spacing:0.06em;margin-top:0;'>FEATURES</h3>
         <div style='color:#aaa;'>
-            <p style='margin:0.5rem 0;'>✅ Multi-page navigation</p>
-            <p style='margin:0.5rem 0;'>✅ Search movies by title</p>
-            <p style='margin:0.5rem 0;'>✅ Browse by genre & sort</p>
-            <p style='margin:0.5rem 0;'>✅ Movie posters & details</p>
-            <p style='margin:0.5rem 0;'>✅ AI chatbot (Gemini)</p>
+            <p style='margin:0.5rem 0;'>✅ Multi-page sidebar navigation</p>
+            <p style='margin:0.5rem 0;'>✅ AI movie recommendations</p>
+            <p style='margin:0.5rem 0;'>✅ Search by mood or title</p>
+            <p style='margin:0.5rem 0;'>✅ Browse by genre & mood</p>
+            <p style='margin:0.5rem 0;'>✅ AI movie chatbot</p>
             <p style='margin:0.5rem 0;'>✅ Chat history</p>
-            <p style='margin:0.5rem 0;'>✅ Context-aware AI</p>
+            <p style='margin:0.5rem 0;'>✅ Secure API key via secrets</p>
         </div>
     </div>
     """, unsafe_allow_html=True)
 
 st.markdown("""
 <p style='text-align:center; color:#444; font-size:0.8rem; margin-top:3rem;'>
-    Built with ❤️ using Streamlit · Powered by TMDB & Google Gemini
+    Built with ❤️ using Streamlit · Powered by Google Gemini
 </p>""", unsafe_allow_html=True)
