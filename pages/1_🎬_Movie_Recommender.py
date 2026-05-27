@@ -1,5 +1,7 @@
 import streamlit as st
-import requests
+from google import genai
+from google.genai import types
+import json
 
 st.set_page_config(page_title="Movie Recommender – CineAI", page_icon="🎬", layout="wide")
 
@@ -28,126 +30,140 @@ with st.sidebar:
         <span style="font-family:'Bebas Neue',sans-serif; font-size:2rem; color:#F5F0EB;">AI</span>
     </div><hr style="border-color:#2a2a2a;">
     """, unsafe_allow_html=True)
+    st.markdown("<p style='color:#555; font-size:0.75rem;'>💡 Try searching:</p>", unsafe_allow_html=True)
+    for s in ["sci-fi movies like Interstellar", "romantic comedies", "horror movies 2023", "best Nolan films", "action movies for kids"]:
+        st.markdown(f"<p style='color:#666;font-size:0.75rem;margin:0.2rem 0;'>• {s}</p>", unsafe_allow_html=True)
 
 # ─── LOAD API KEY FROM SECRETS ──────────────────────────────────────────────
 try:
-    tmdb_key = st.secrets["TMDB_API_KEY"]
+    gemini_key = st.secrets["GEMINI_API_KEY"]
 except KeyError:
-    st.error("⚠️ TMDB_API_KEY not found in secrets. Please configure it in Streamlit Cloud secrets.")
+    st.error("⚠️ GEMINI_API_KEY not found in secrets.")
     st.stop()
 
-TMDB_BASE = "https://api.themoviedb.org/3"
-IMG_BASE  = "https://image.tmdb.org/t/p/w500"
+client = genai.Client(api_key=gemini_key)
 
-def tmdb_get(endpoint, params, key):
-    params["api_key"] = key
-    r = requests.get(f"{TMDB_BASE}{endpoint}", params=params, timeout=10)
-    r.raise_for_status()
-    return r.json()
+def get_recommendations(query):
+    prompt = f"""You are a movie expert. The user is looking for: "{query}"
+    
+Recommend exactly 8 movies. Respond ONLY with a valid JSON array, no extra text, no markdown, no backticks.
 
-def star_rating(score):
-    stars = round(score / 2)
-    return "★" * stars + "☆" * (5 - stars)
+Format:
+[
+  {{
+    "title": "Movie Title",
+    "year": "2010",
+    "director": "Director Name",
+    "genre": "Action, Thriller",
+    "rating": "8.5/10",
+    "description": "A 2-sentence description of the movie and why someone would enjoy it.",
+    "why": "One sentence on why this matches the user's request."
+  }}
+]"""
 
-def render_movie_grid(movies, key):
-    cols = st.columns(4, gap="medium")
-    for i, movie in enumerate(movies):
-        with cols[i % 4]:
-            poster = f"{IMG_BASE}{movie['poster_path']}" if movie.get("poster_path") else None
-            title  = movie.get("title", "Unknown")
-            year   = movie.get("release_date", "")[:4] or "—"
-            rating = movie.get("vote_average", 0)
+    response = client.models.generate_content(
+        model="gemini-2.0-flash",
+        config=types.GenerateContentConfig(temperature=0.7, max_output_tokens=2048),
+        contents=prompt
+    )
+    
+    text = response.text.strip()
+    # Strip any accidental markdown fences
+    text = text.replace("```json", "").replace("```", "").strip()
+    return json.loads(text)
 
-            if poster:
-                st.image(poster, use_container_width=True)
-            else:
-                st.markdown("<div style='background:#1a1a1a;border:1px solid #2a2a2a;border-radius:6px;height:220px;display:flex;align-items:center;justify-content:center;'><span style='font-size:2.5rem;'>🎬</span></div>", unsafe_allow_html=True)
-
-            st.markdown(f"""
-            <div style='margin-top:0.4rem; margin-bottom:0.3rem;'>
-                <p style='font-family:\"Bebas Neue\",sans-serif;font-size:0.95rem;color:#F5F0EB;margin:0;letter-spacing:0.04em;line-height:1.2;'>{title}</p>
-                <p style='color:#888;font-size:0.75rem;margin:0.1rem 0 0 0;'>
-                    {year} · <span style='color:#E63946;'>{star_rating(rating)}</span> <span style='color:#555;'>{rating:.1f}</span>
-                </p>
-            </div>""", unsafe_allow_html=True)
-
-            with st.expander("ℹ️ Details"):
-                try:
-                    d = tmdb_get(f"/movie/{movie['id']}", {"language":"en-US","append_to_response":"credits"}, key)
-                    overview  = d.get("overview","No description.")
-                    runtime   = d.get("runtime", 0)
-                    genres_l  = ", ".join(g["name"] for g in d.get("genres",[]))
-                    cast      = ", ".join(c["name"] for c in d.get("credits",{}).get("cast",[])[:4]) or "N/A"
-                    st.markdown(f"""
-                    <p style='color:#bbb;font-size:0.82rem;line-height:1.5;'>{overview[:250]}{'…' if len(overview)>250 else ''}</p>
-                    <p style='font-size:0.76rem;color:#888;margin-top:0.4rem;'>🕐 {runtime} min · 🎭 {genres_l}</p>
-                    <p style='font-size:0.76rem;color:#888;'>👥 {cast}</p>
-                    """, unsafe_allow_html=True)
-                except Exception as ex:
-                    st.caption(f"Could not load details: {ex}")
+def star_rating(rating_str):
+    try:
+        score = float(rating_str.replace("/10", "").strip())
+        stars = round(score / 2)
+        return "★" * stars + "☆" * (5 - stars)
+    except:
+        return "★★★★☆"
 
 # ─── PAGE HEADER ────────────────────────────────────────────────────────────
 st.markdown("""
 <h1 style='font-family:\"Bebas Neue\",sans-serif;font-size:2.8rem;color:#F5F0EB;letter-spacing:0.06em;margin-bottom:0;'>
     MOVIE <span style='color:#E63946;'>RECOMMENDER</span>
 </h1>
-<p style='color:#888;margin-top:0.2rem;'>Search by title or browse by genre</p>
+<p style='color:#888;margin-top:0.2rem;'>Powered by Gemini AI · Describe what you want to watch</p>
 <hr>""", unsafe_allow_html=True)
 
-tab1, tab2 = st.tabs(["🔍  Search by Title", "🎭  Browse by Genre"])
+tab1, tab2 = st.tabs(["🔍  Search by Mood / Title", "🎭  Browse by Genre"])
 
+# ─── TAB 1: SEARCH ──────────────────────────────────────────────────────────
 with tab1:
-    c1, c2 = st.columns([4,1])
+    c1, c2 = st.columns([4, 1])
     with c1:
-        query = st.text_input("", placeholder="e.g. Inception, Parasite, The Dark Knight…", label_visibility="collapsed")
+        query = st.text_input("", placeholder="e.g. mind-bending sci-fi, movies like Parasite, sad romance…", label_visibility="collapsed")
     with c2:
         st.markdown("<div style='margin-top:4px;'>", unsafe_allow_html=True)
-        do_search = st.button("Search", use_container_width=True)
+        do_search = st.button("Search", use_container_width=True, key="search_btn")
         st.markdown("</div>", unsafe_allow_html=True)
 
     if do_search and query:
-        with st.spinner("Searching…"):
+        with st.spinner("Finding movies for you…"):
             try:
-                res = tmdb_get("/search/movie", {"query": query, "page":1, "include_adult":False}, tmdb_key)
-                movies = res.get("results", [])
-                if not movies:
-                    st.warning("No movies found. Try a different title.")
-                else:
-                    st.markdown(f"<p style='color:#888;font-size:0.85rem;'>Found {res['total_results']} results — showing top 12</p>", unsafe_allow_html=True)
-                    render_movie_grid(movies[:12], tmdb_key)
+                movies = get_recommendations(query)
+                st.markdown(f"<p style='color:#888;font-size:0.85rem;'>Here are 8 picks for <b style='color:#E63946;'>\"{query}\"</b></p>", unsafe_allow_html=True)
+                cols = st.columns(4, gap="medium")
+                for i, movie in enumerate(movies):
+                    with cols[i % 4]:
+                        st.markdown(f"""
+                        <div style='background:#161616;border:1px solid #2a2a2a;border-radius:10px;padding:1rem;margin-bottom:0.5rem;height:100%;'>
+                            <div style='background:#1a1a1a;border-radius:6px;height:160px;display:flex;align-items:center;justify-content:center;margin-bottom:0.8rem;'>
+                                <span style='font-size:3rem;'>🎬</span>
+                            </div>
+                            <p style='font-family:\"Bebas Neue\",sans-serif;font-size:1rem;color:#F5F0EB;margin:0;letter-spacing:0.04em;line-height:1.2;'>{movie.get('title','')}</p>
+                            <p style='color:#888;font-size:0.75rem;margin:0.2rem 0;'>{movie.get('year','')} · <span style='color:#E63946;'>{star_rating(movie.get('rating','8/10'))}</span> {movie.get('rating','')}</p>
+                            <p style='color:#666;font-size:0.72rem;margin:0;'>🎭 {movie.get('genre','')}</p>
+                            <p style='color:#777;font-size:0.72rem;margin:0.1rem 0;'>🎬 {movie.get('director','')}</p>
+                        </div>
+                        """, unsafe_allow_html=True)
+                        with st.expander("ℹ️ Why watch?"):
+                            st.markdown(f"<p style='color:#bbb;font-size:0.82rem;line-height:1.5;'>{movie.get('description','')}</p>", unsafe_allow_html=True)
+                            st.markdown(f"<p style='color:#E63946;font-size:0.78rem;font-style:italic;'>✨ {movie.get('why','')}</p>", unsafe_allow_html=True)
+            except json.JSONDecodeError:
+                st.error("Couldn't parse recommendations. Try again!")
             except Exception as e:
                 st.error(f"Error: {e}")
 
+# ─── TAB 2: BROWSE BY GENRE ─────────────────────────────────────────────────
 with tab2:
-    try:
-        genre_data = tmdb_get("/genre/movie/list", {"language":"en-US"}, tmdb_key)
-        genres = {g["name"]: g["id"] for g in genre_data["genres"]}
+    genres = ["Action", "Comedy", "Drama", "Horror", "Sci-Fi", "Romance", "Thriller", "Animation", "Documentary", "Fantasy"]
+    moods  = ["Feel-good", "Mind-bending", "Tear-jerker", "Adrenaline rush", "Thought-provoking", "Family-friendly"]
 
-        cg, cs, cb = st.columns([2,2,1])
-        with cg:
-            sel_genre = st.selectbox("Genre", list(genres.keys()))
-        with cs:
-            sort_map = {"Popularity":"popularity.desc","Top Rated":"vote_average.desc","Newest":"release_date.desc"}
-            sort_lbl = st.selectbox("Sort by", list(sort_map.keys()))
-        with cb:
-            st.markdown("<div style='margin-top:28px;'>", unsafe_allow_html=True)
-            do_browse = st.button("Browse", use_container_width=True)
-            st.markdown("</div>", unsafe_allow_html=True)
+    cg, cm, cb = st.columns([2, 2, 1])
+    with cg:
+        sel_genre = st.selectbox("Genre", genres)
+    with cm:
+        sel_mood = st.selectbox("Mood", moods)
+    with cb:
+        st.markdown("<div style='margin-top:28px;'>", unsafe_allow_html=True)
+        do_browse = st.button("Browse", use_container_width=True, key="browse_btn")
+        st.markdown("</div>", unsafe_allow_html=True)
 
-        if do_browse:
-            with st.spinner("Loading…"):
-                try:
-                    res = tmdb_get("/discover/movie", {
-                        "with_genres": genres[sel_genre],
-                        "sort_by": sort_map[sort_lbl],
-                        "page":1, "vote_count.gte":100
-                    }, tmdb_key)
-                    movies = res.get("results",[])
-                    if movies:
-                        render_movie_grid(movies[:12], tmdb_key)
-                    else:
-                        st.warning("No movies found.")
-                except Exception as e:
-                    st.error(f"Error: {e}")
-    except Exception as e:
-        st.error(f"Could not load genres. Check your secrets config. ({e})")
+    if do_browse:
+        with st.spinner("Finding movies…"):
+            try:
+                browse_query = f"{sel_mood} {sel_genre} movies"
+                movies = get_recommendations(browse_query)
+                st.markdown(f"<p style='color:#888;font-size:0.85rem;'>Top picks for <b style='color:#E63946;'>{sel_mood} {sel_genre}</b></p>", unsafe_allow_html=True)
+                cols = st.columns(4, gap="medium")
+                for i, movie in enumerate(movies):
+                    with cols[i % 4]:
+                        st.markdown(f"""
+                        <div style='background:#161616;border:1px solid #2a2a2a;border-radius:10px;padding:1rem;margin-bottom:0.5rem;'>
+                            <div style='background:#1a1a1a;border-radius:6px;height:160px;display:flex;align-items:center;justify-content:center;margin-bottom:0.8rem;'>
+                                <span style='font-size:3rem;'>🎬</span>
+                            </div>
+                            <p style='font-family:\"Bebas Neue\",sans-serif;font-size:1rem;color:#F5F0EB;margin:0;letter-spacing:0.04em;line-height:1.2;'>{movie.get('title','')}</p>
+                            <p style='color:#888;font-size:0.75rem;margin:0.2rem 0;'>{movie.get('year','')} · <span style='color:#E63946;'>{star_rating(movie.get('rating','8/10'))}</span> {movie.get('rating','')}</p>
+                            <p style='color:#666;font-size:0.72rem;margin:0;'>🎭 {movie.get('genre','')}</p>
+                            <p style='color:#777;font-size:0.72rem;margin:0.1rem 0;'>🎬 {movie.get('director','')}</p>
+                        </div>
+                        """, unsafe_allow_html=True)
+                        with st.expander("ℹ️ Why watch?"):
+                            st.markdown(f"<p style='color:#bbb;font-size:0.82rem;line-height:1.5;'>{movie.get('description','')}</p>", unsafe_allow_html=True)
+                            st.markdown(f"<p style='color:#E63946;font-size:0.78rem;font-style:italic;'>✨ {movie.get('why','')}</p>", unsafe_allow_html=True)
+            except Exception as e:
+                st.error(f"Error: {e}")
