@@ -97,6 +97,7 @@ html, body, .stApp {
 hr {
     border-color: var(--border) !important;
 }
+[data-testid="collapsedControl"] { display:block !important; color:white !important; }
 </style>
 """, unsafe_allow_html=True)
 
