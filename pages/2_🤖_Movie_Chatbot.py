@@ -70,7 +70,7 @@ def ask_gemini(chat_history, user_msg):
     contents.append(types.Content(role="user", parts=[types.Part(text=user_msg)]))
 
     response = client.models.generate_content(
-        model="gemini-1.5-flash",
+        model="gemini-2.0-flash-lite",
         config=types.GenerateContentConfig(
             system_instruction=SYSTEM_PROMPT,
             temperature=0.8,
