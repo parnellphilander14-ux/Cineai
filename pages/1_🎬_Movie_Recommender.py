@@ -17,6 +17,7 @@ html, body, .stApp { background-color:var(--dark) !important; color:var(--white)
 .stButton>button:hover { opacity:0.85 !important; }
 .stTextInput>div>div>input, .stSelectbox>div>div { background-color:var(--card) !important; border:1px solid var(--border) !important; color:var(--white) !important; border-radius:6px !important; font-family:'DM Sans',sans-serif !important; }
 hr { border-color:var(--border) !important; }
+[data-testid="collapsedControl"] { display:block !important; color:white !important; }
 [data-testid="stSidebarNav"] a { color:var(--muted) !important; }
 [data-testid="stSidebarNav"] a:hover { color:var(--white) !important; background-color:rgba(230,57,70,0.15) !important; }
 div[data-testid="stExpander"] { background-color:var(--card) !important; border:1px solid var(--border) !important; border-radius:8px !important; }
